@@ -71,6 +71,7 @@ namespace refract
         void operator()(const ExtendElement& e);
 
         void operator()(const OptionElement& e);
+        void operator()(const RefElement& e);
 
         IElement* get();
         IElement* getOwnership();

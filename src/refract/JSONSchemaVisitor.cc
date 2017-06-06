@@ -554,6 +554,11 @@ namespace refract
         }
     }
 
+    void JSONSchemaVisitor::operator()(const RefElement& e)
+    {
+        throw NotImplemented("NI: compacr serialization for RefElement is not supported");
+    }
+
     IElement* JSONSchemaVisitor::get()
     {
         return pObj;

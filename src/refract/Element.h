@@ -90,6 +90,16 @@ namespace refract
         virtual std::string element() const = 0;
         virtual void element(const std::string&) = 0;
 
+        /**
+         * return base name of element 
+         * this allow detect "named elements"
+         *
+         * `if (e.element() == e.elementName*()) ...`
+         *
+         * do not use to check element type!
+         */
+        virtual const std::string elementName() const = 0;
+
         // NOTE: probably rename to Accept
         virtual void content(Visitor& v) const = 0;
 
@@ -165,6 +175,11 @@ namespace refract
         virtual void element(const std::string& name)
         {
             element_ = name;
+        }
+
+        virtual const std::string elementName() const
+        {
+            return TraitType::element();
         }
 
         void set(const ValueType& val)
