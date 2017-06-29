@@ -1,0 +1,35 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.4.1
+    working_directory: /tmp/drafter
+
+    steps:
+      - checkout
+
+      - run: git submodule update --init --recursive
+      - run: sudo apt-get install valgrind
+
+      - run:
+          name: Build
+          environment:
+            CXXFLAGS: '-Werror'
+          command: |
+            ./configure -i
+            make
+
+      - run:
+          name: Test
+          command: make test
+
+      - run:
+          name: Memory Test
+          command: |
+            mkdir artifacts
+            valgrind --leak-check=full --show-leak-kinds=definite,indirect,possible --error-exitcode=1 ./bin/test-libdrafter 2> artifacts/memcheck.log
+            valgrind --leak-check=full --show-leak-kinds=definite,indirect,possible --error-exitcode=1 ./bin/test-capi 2> artifacts/memcheck-capi.log
+
+      - store_artifacts:
+          path: artifacts
