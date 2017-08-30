@@ -4,8 +4,8 @@ static refract::IElement* CharacterRangeToRefract(const mdp::CharactersRange& so
 {
     refract::ArrayElement* range = new refract::ArrayElement;
 
-    range->push_back(refract::IElement::Create(sourceMap.location));
-    range->push_back(refract::IElement::Create(sourceMap.length));
+    range->push_back(refract::Create(sourceMap.location));
+    range->push_back(refract::Create(sourceMap.length));
 
     return range;
 }

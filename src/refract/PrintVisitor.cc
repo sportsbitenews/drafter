@@ -36,7 +36,7 @@ namespace refract
     {
         indented() << "- <meta>\n";
 
-        for (const auto& m : e.meta) {
+        for (const auto& m : e.meta()) {
             PrintVisitor{ indent + 1, os, ommitSourceMap }(*m);
         }
     }
@@ -45,9 +45,9 @@ namespace refract
     {
         indented() << "- <attr>\n";
 
-        for (const auto& a : e.attributes) {
-            if (const auto mPtr = TypeQueryVisitor::as<MemberElement>(a))
-                if (const auto strPtr = TypeQueryVisitor::as<StringElement>(mPtr->value.first))
+        for (const auto& a : e.attributes()) {
+            if (const auto mPtr = TypeQueryVisitor::as<const MemberElement>(a.get()))
+                if (const auto strPtr = TypeQueryVisitor::as<const StringElement>(mPtr->value.first))
                     if (ommitSourceMap && (strPtr->value.compare("sourceMap") == 0))
                         continue;
 

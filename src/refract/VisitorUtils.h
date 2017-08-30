@@ -22,9 +22,9 @@ namespace refract
     template <typename T>
     bool IsTypeAttribute(const T& e, std::string typeAttribute)
     {
-        IElement::MemberElementCollection::const_iterator ta = e.attributes.find("typeAttributes");
+        auto ta = e.attributes().find("typeAttributes");
 
-        if (ta == e.attributes.end()) {
+        if (ta == e.attributes().end()) {
             return false;
         }
 
@@ -34,7 +34,7 @@ namespace refract
             return false;
         }
 
-        for (ArrayElement::ValueType::const_iterator it = attrs->value.begin(); it != attrs->value.end(); ++it) {
+        for (auto it = attrs->value.begin(); it != attrs->value.end(); ++it) {
             StringElement* attr = TypeQueryVisitor::as<StringElement>(*it);
             if (!attr) {
                 continue;
@@ -50,9 +50,9 @@ namespace refract
     template <typename T>
     bool IsVariableProperty(const T& e)
     {
-        IElement::MemberElementCollection::const_iterator i = e.attributes.find("variable");
+        auto i = e.attributes().find("variable");
 
-        if (i == e.attributes.end()) {
+        if (i == e.attributes().end()) {
             return false;
         }
 
@@ -63,9 +63,9 @@ namespace refract
     template <typename T>
     const T* GetDefault(const T& e)
     {
-        IElement::MemberElementCollection::const_iterator i = e.attributes.find("default");
+        auto i = e.attributes().find("default");
 
-        if (i == e.attributes.end()) {
+        if (i == e.attributes().end()) {
             return NULL;
         }
 
@@ -75,9 +75,9 @@ namespace refract
     template <typename T>
     const T* GetSample(const T& e)
     {
-        IElement::MemberElementCollection::const_iterator i = e.attributes.find("samples");
+        auto i = e.attributes().find("samples");
 
-        if (i == e.attributes.end()) {
+        if (i == e.attributes().end()) {
             return NULL;
         }
 
@@ -179,9 +179,9 @@ namespace refract
     void HandleRefWhenFetchingMembers(
         const refract::IElement* e, typename T::ValueType& members, const Functor& functor)
     {
-        IElement::MemberElementCollection::const_iterator found = e->attributes.find("resolved");
+        auto found = e->attributes().find("resolved");
 
-        if (found == e->attributes.end()) {
+        if (found == e->attributes().end()) {
             return;
         }
 
@@ -219,9 +219,9 @@ namespace refract
     }
 
     template <typename T>
-    T* FindCollectionMemberValue(const IElement::MemberElementCollection& collection, const std::string& key)
+    T* FindCollectionMemberValue(const MemberElementCollection& collection, const std::string& key)
     {
-        IElement::MemberElementCollection::const_iterator i = collection.find(key);
+        auto i = collection.find(key);
         if (i == collection.end()) {
             return NULL;
         }

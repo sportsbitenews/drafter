@@ -194,7 +194,7 @@ namespace drafter
     template <typename T>
     refract::ArrayElement* CreateArrayElement(const T& content)
     {
-        refract::IElement* value = refract::IElement::Create(content);
+        refract::IElement* value = refract::Create(content);
         return CreateArrayElement(value);
     }
 

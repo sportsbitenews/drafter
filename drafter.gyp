@@ -63,6 +63,9 @@
         "src/ConversionContext.h",
 
 # librefract parts - will be separated into other project
+        "src/refract/ElementIfc.h",
+        "src/refract/MemberElementCollection.h",
+        "src/refract/MemberElementCollection.cc",
         "src/refract/Element.h",
         "src/refract/Element.cc",
         "src/refract/ElementFwd.h",
@@ -120,6 +123,7 @@
       ],
       'sources': [
         "test/test-drafter.cc",
+        "test/test-MemberElementCollection.cc",
         "test/test-RefractDataStructureTest.cc",
         "test/test-RefractAPITest.cc",
         "test/test-RefractParseResultTest.cc",

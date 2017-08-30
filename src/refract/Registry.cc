@@ -35,9 +35,9 @@ namespace refract
 
     std::string Registry::getElementId(IElement* element)
     {
-        IElement::MemberElementCollection::const_iterator it = element->meta.find("id");
+        auto it = element->meta().find("id");
 
-        if (it == element->meta.end()) {
+        if (it == element->meta().end()) {
             throw LogicError("Element has no ID");
         }
 
@@ -65,9 +65,9 @@ namespace refract
 
     bool Registry::add(IElement* element)
     {
-        IElement::MemberElementCollection::const_iterator it = element->meta.find("id");
+        auto it = element->meta().find("id");
 
-        if (it == element->meta.end()) {
+        if (it == element->meta().end()) {
             throw LogicError("Element has no ID");
         }
 

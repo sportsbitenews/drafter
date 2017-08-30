@@ -119,8 +119,8 @@ namespace drafter
 
         refract::ArrayElement* classes = CreateArrayElement(SerializeKey::User);
 
-        element->meta[SerializeKey::Classes] = classes;
-        element->set(refract::IElement::Create(metadata.node->first), refract::IElement::Create(metadata.node->second));
+        element->meta().set(SerializeKey::Classes, classes);
+        element->set(refract::Create(metadata.node->first), refract::Create(metadata.node->second));
 
         AttachSourceMap(element, metadata);
 
@@ -150,13 +150,13 @@ namespace drafter
             refract::ArrayElement* samples = new refract::ArrayElement;
             samples->push_back(
                 CreateArrayElement(LiteralToRefract<std::string>(MAKE_NODE_INFO(parameter, exampleValue), context)));
-            element->attributes[SerializeKey::Samples] = samples;
+            element->attributes().set(SerializeKey::Samples, samples);
         }
 
         // Add default value
         if (!parameter.node->defaultValue.empty()) {
-            element->attributes[SerializeKey::Default]
-                = CreateArrayElement(LiteralToRefract<std::string>(MAKE_NODE_INFO(parameter, defaultValue), context));
+            element->attributes().set(SerializeKey::Default,
+                CreateArrayElement(LiteralToRefract<std::string>(MAKE_NODE_INFO(parameter, defaultValue), context)));
         }
 
         return element;
@@ -175,8 +175,8 @@ namespace drafter
             }
 
             if (!parameter.node->defaultValue.empty()) {
-                element->attributes[SerializeKey::Default]
-                    = PrimitiveToRefract(MAKE_NODE_INFO(parameter, defaultValue));
+                element->attributes().set(
+                    SerializeKey::Default, PrimitiveToRefract(MAKE_NODE_INFO(parameter, defaultValue)));
             }
         } else {
             element = ParameterValuesToRefract(parameter, context);
@@ -193,11 +193,11 @@ namespace drafter
 
         // Description
         if (!parameter.node->description.empty()) {
-            element->meta[SerializeKey::Description] = PrimitiveToRefract(MAKE_NODE_INFO(parameter, description));
+            element->meta().set(SerializeKey::Description, PrimitiveToRefract(MAKE_NODE_INFO(parameter, description)));
         }
 
         if (!parameter.node->type.empty()) {
-            element->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(parameter, type));
+            element->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(parameter, type)));
         }
 
         // Parameter use
@@ -209,8 +209,8 @@ namespace drafter
 
         refract::ArrayElement* typeAttributes = new refract::ArrayElement;
 
-        typeAttributes->push_back(refract::IElement::Create(use));
-        element->attributes[SerializeKey::TypeAttributes] = typeAttributes;
+        typeAttributes->push_back(refract::Create(use));
+        element->attributes().set(SerializeKey::TypeAttributes, typeAttributes);
 
         return element;
     }
@@ -226,7 +226,7 @@ namespace drafter
     {
         refract::MemberElement* element = new refract::MemberElement;
 
-        element->set(refract::IElement::Create(header.node->first), refract::IElement::Create(header.node->second));
+        element->set(refract::Create(header.node->first), refract::Create(header.node->second));
 
         AttachSourceMap(element, header);
 
@@ -243,11 +243,11 @@ namespace drafter
         refract::IElement* element = PrimitiveToRefract(asset);
 
         element->element(SerializeKey::Asset);
-        element->meta[SerializeKey::Classes] = CreateArrayElement(metaClass);
+        element->meta().set(SerializeKey::Classes, CreateArrayElement(metaClass));
 
         if (!contentType.empty()) {
             // FIXME: "contentType" has no sourceMap?
-            element->attributes[SerializeKey::ContentType] = refract::IElement::Create(contentType);
+            element->attributes().set(SerializeKey::ContentType, refract::Create(contentType));
         }
 
         return element;
@@ -268,14 +268,14 @@ namespace drafter
             // delivery test to see this part is required else remove it
             // related discussion: https://github.com/apiaryio/drafter/pull/148/files#r42275194
             if (!payload.isNull() /* && !payload.node->name.empty() */) {
-                element->attributes[SerializeKey::StatusCode] = PrimitiveToRefract(MAKE_NODE_INFO(payload, name));
+                element->attributes().set(SerializeKey::StatusCode, PrimitiveToRefract(MAKE_NODE_INFO(payload, name)));
             }
         } else {
             element->element(SerializeKey::HTTPRequest);
-            element->attributes[SerializeKey::Method] = PrimitiveToRefract(MAKE_NODE_INFO(action, method));
+            element->attributes().set(SerializeKey::Method, PrimitiveToRefract(MAKE_NODE_INFO(action, method)));
 
             if (!payload.isNull() && !payload.node->name.empty()) {
-                element->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(payload, name));
+                element->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(payload, name)));
             }
         }
 
@@ -288,13 +288,14 @@ namespace drafter
         }
 
         if (!payload.node->parameters.empty()) {
-            element->attributes[SerializeKey::HrefVariables]
-                = ParametersToRefract(MAKE_NODE_INFO(payload, parameters), context);
+            element->attributes().set(
+                SerializeKey::HrefVariables, ParametersToRefract(MAKE_NODE_INFO(payload, parameters), context));
         }
 
         if (!payload.node->headers.empty()) {
-            element->attributes[SerializeKey::Headers] = CollectionToRefract<refract::ArrayElement>(
-                MAKE_NODE_INFO(payload, headers), context, HeaderToRefract, SerializeKey::HTTPHeaders);
+            element->attributes().set(SerializeKey::Headers,
+                CollectionToRefract<refract::ArrayElement>(
+                    MAKE_NODE_INFO(payload, headers), context, HeaderToRefract, SerializeKey::HTTPHeaders));
         }
 
         content.push_back(CopyToRefract(MAKE_NODE_INFO(payload, description)));
@@ -374,28 +375,28 @@ namespace drafter
         RefractElements content;
 
         element->element(SerializeKey::Transition);
-        element->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(action, name));
+        element->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(action, name)));
 
         if (!action.node->relation.str.empty()) {
             // We can't use PrimitiveToRefract() because `action.node->relation` here is a struct Relation
-            refract::StringElement* relation = refract::IElement::Create(action.node->relation.str);
+            refract::StringElement* relation = refract::Create(action.node->relation.str);
             AttachSourceMap(relation, MAKE_NODE_INFO(action, relation));
 
-            element->attributes[SerializeKey::Relation] = relation;
+            element->attributes().set(SerializeKey::Relation, relation);
         }
 
         if (!action.node->uriTemplate.empty()) {
-            element->attributes[SerializeKey::Href] = PrimitiveToRefract(MAKE_NODE_INFO(action, uriTemplate));
+            element->attributes().set(SerializeKey::Href, PrimitiveToRefract(MAKE_NODE_INFO(action, uriTemplate)));
         }
 
         if (!action.node->parameters.empty()) {
-            element->attributes[SerializeKey::HrefVariables]
-                = ParametersToRefract(MAKE_NODE_INFO(action, parameters), context);
+            element->attributes().set(
+                SerializeKey::HrefVariables, ParametersToRefract(MAKE_NODE_INFO(action, parameters), context));
         }
 
         if (!action.node->attributes.empty()) {
             refract::IElement* dataStructure = DataStructureToRefract(MAKE_NODE_INFO(action, attributes), context);
-            element->attributes[SerializeKey::Data] = dataStructure;
+            element->attributes().set(SerializeKey::Data, dataStructure);
         }
 
         content.push_back(CopyToRefract(MAKE_NODE_INFO(action, description)));
@@ -452,13 +453,13 @@ namespace drafter
 
         element->element(SerializeKey::Resource);
 
-        element->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(resource, name));
+        element->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(resource, name)));
 
-        element->attributes[SerializeKey::Href] = PrimitiveToRefract(MAKE_NODE_INFO(resource, uriTemplate));
+        element->attributes().set(SerializeKey::Href, PrimitiveToRefract(MAKE_NODE_INFO(resource, uriTemplate)));
 
         if (!resource.node->parameters.empty()) {
-            element->attributes[SerializeKey::HrefVariables]
-                = ParametersToRefract(MAKE_NODE_INFO(resource, parameters), context);
+            element->attributes().set(
+                SerializeKey::HrefVariables, ParametersToRefract(MAKE_NODE_INFO(resource, parameters), context));
         }
 
         content.push_back(CopyToRefract(MAKE_NODE_INFO(resource, description)));
@@ -488,10 +489,10 @@ namespace drafter
         category->element(SerializeKey::Category);
 
         if (element.node->category == snowcrash::Element::ResourceGroupCategory) {
-            category->meta[SerializeKey::Classes] = CreateArrayElement(SerializeKey::ResourceGroup);
-            category->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(element, attributes.name));
+            category->meta().set(SerializeKey::Classes, CreateArrayElement(SerializeKey::ResourceGroup));
+            category->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(element, attributes.name)));
         } else if (element.node->category == snowcrash::Element::DataStructureGroupCategory) {
-            category->meta[SerializeKey::Classes] = CreateArrayElement(SerializeKey::DataStructures);
+            category->meta().set(SerializeKey::Classes, CreateArrayElement(SerializeKey::DataStructures));
         }
 
         if (!element.node->content.elements().empty()) {
@@ -534,14 +535,15 @@ namespace drafter
 
         ast->element(SerializeKey::Category);
 
-        ast->meta[SerializeKey::Classes] = CreateArrayElement(SerializeKey::API);
-        ast->meta[SerializeKey::Title] = PrimitiveToRefract(MAKE_NODE_INFO(blueprint, name));
+        ast->meta().set(SerializeKey::Classes, CreateArrayElement(SerializeKey::API));
+        ast->meta().set(SerializeKey::Title, PrimitiveToRefract(MAKE_NODE_INFO(blueprint, name)));
 
         content.push_back(CopyToRefract(MAKE_NODE_INFO(blueprint, description)));
 
         if (!blueprint.node->metadata.empty()) {
-            ast->attributes[SerializeKey::Metadata] = CollectionToRefract<refract::ArrayElement>(
-                MAKE_NODE_INFO(blueprint, metadata), context, MetadataToRefract);
+            ast->attributes().set(SerializeKey::Metadata,
+                CollectionToRefract<refract::ArrayElement>(
+                    MAKE_NODE_INFO(blueprint, metadata), context, MetadataToRefract));
         }
 
         NodeInfoToElements(MAKE_NODE_INFO(blueprint, content.elements()), ElementToRefract, content, context);
@@ -554,14 +556,14 @@ namespace drafter
 
     refract::IElement* AnnotationToRefract(const snowcrash::SourceAnnotation& annotation, const std::string& key)
     {
-        refract::IElement* element = refract::IElement::Create(annotation.message);
+        refract::IElement* element = refract::Create(annotation.message);
 
         element->element(SerializeKey::Annotation);
 
-        element->meta[SerializeKey::Classes] = CreateArrayElement(key);
+        element->meta().set(SerializeKey::Classes, CreateArrayElement(key));
 
-        element->attributes[SerializeKey::AnnotationCode] = refract::IElement::Create(annotation.code);
-        element->attributes[SerializeKey::SourceMap] = SourceMapToRefract(annotation.location);
+        element->attributes().set(SerializeKey::AnnotationCode, refract::Create(annotation.code));
+        element->attributes().set(SerializeKey::SourceMap, SourceMapToRefract(annotation.location));
 
         return element;
     }

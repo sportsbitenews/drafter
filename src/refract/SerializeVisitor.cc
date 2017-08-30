@@ -16,16 +16,13 @@ namespace refract
 
     namespace
     {
-        sos::Object SerializeElementCollection(
-            const IElement::MemberElementCollection& collection, bool generateSourceMap)
+        sos::Object SerializeElementCollection(const MemberElementCollection& collection, bool generateSourceMap)
         {
-            typedef IElement::MemberElementCollection::const_iterator iterator;
-
             sos::Object result;
 
-            for (iterator it = collection.begin(); it != collection.end(); ++it) {
+            for (const auto& e : collection) {
 
-                StringElement* key = TypeQueryVisitor::as<StringElement>((*it)->value.first);
+                StringElement* key = TypeQueryVisitor::as<StringElement>(e->value.first);
 
                 if (!generateSourceMap) {
                     if (key && key->value == "sourceMap") {
@@ -34,7 +31,7 @@ namespace refract
                 }
 
                 SosSerializeVisitor s(generateSourceMap);
-                Visit(s, *((*it)->value.second));
+                Visit(s, *(e->value.second));
                 result.set(key->value, s.get());
             }
 
@@ -68,7 +65,7 @@ namespace refract
         result.set("element", sos::String(e.element()));
         bool sourceMap = generateSourceMap;
 
-        sos::Object meta = SerializeElementCollection(e.meta, sourceMap);
+        sos::Object meta = SerializeElementCollection(e.meta(), sourceMap);
         if (!meta.empty()) {
             result.set("meta", meta);
         }
@@ -77,7 +74,7 @@ namespace refract
             sourceMap = true;
         }
 
-        sos::Object attr = SerializeElementCollection(e.attributes, sourceMap);
+        sos::Object attr = SerializeElementCollection(e.attributes(), sourceMap);
         if (!attr.empty()) {
             result.set("attributes", attr);
         }

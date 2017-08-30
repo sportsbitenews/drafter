@@ -199,7 +199,7 @@ struct AnnotationToString {
         }
 
         if (const refract::ArrayElement* classes
-            = refract::FindCollectionMemberValue<refract::ArrayElement>(annotation->meta, "classes")) {
+            = refract::FindCollectionMemberValue<refract::ArrayElement>(annotation->meta(), "classes")) {
             if (classes->value.size() == 1) {
                 refract::StringElement* type
                     = refract::TypeQueryVisitor::as<refract::StringElement>(classes->value.front());
@@ -210,7 +210,7 @@ struct AnnotationToString {
         };
 
         if (const refract::NumberElement* code
-            = refract::FindCollectionMemberValue<refract::NumberElement>(annotation->attributes, "code")) {
+            = refract::FindCollectionMemberValue<refract::NumberElement>(annotation->attributes(), "code")) {
             output << "(" << code->value << ")  ";
         }
 
@@ -219,7 +219,7 @@ struct AnnotationToString {
         }
 
         if (refract::ArrayElement* sourceMap
-            = refract::FindCollectionMemberValue<refract::ArrayElement>(annotation->attributes, "sourceMap")) {
+            = refract::FindCollectionMemberValue<refract::ArrayElement>(annotation->attributes(), "sourceMap")) {
             if (sourceMap->value.size() == 1) {
                 sourceMap = refract::TypeQueryVisitor::as<refract::ArrayElement>(sourceMap->value.front());
                 if (sourceMap) {

@@ -225,19 +225,19 @@ namespace drafter
         refract::ArrayElement* attr = new refract::ArrayElement;
 
         if (ta & mson::RequiredTypeAttribute) {
-            attr->push_back(refract::IElement::Create(SerializeKey::Required));
+            attr->push_back(refract::Create(SerializeKey::Required));
         }
         if (ta & mson::OptionalTypeAttribute) {
-            attr->push_back(refract::IElement::Create(SerializeKey::Optional));
+            attr->push_back(refract::Create(SerializeKey::Optional));
         }
         if (ta & mson::FixedTypeAttribute) {
-            attr->push_back(refract::IElement::Create(SerializeKey::Fixed));
+            attr->push_back(refract::Create(SerializeKey::Fixed));
         }
         if (ta & mson::FixedTypeTypeAttribute) {
-            attr->push_back(refract::IElement::Create(SerializeKey::FixedType));
+            attr->push_back(refract::Create(SerializeKey::FixedType));
         }
         if (ta & mson::NullableTypeAttribute) {
-            attr->push_back(refract::IElement::Create(SerializeKey::Nullable));
+            attr->push_back(refract::Create(SerializeKey::Nullable));
         }
 
         if (attr->value.empty()) {
@@ -673,7 +673,7 @@ namespace drafter
                     a->push_back(sampleElement);
                 }
 
-                element->attributes[SerializeKey::Samples] = a;
+                element->attributes().set(SerializeKey::Samples, a);
             }
         };
 
@@ -689,7 +689,7 @@ namespace drafter
 
                 T* defaultElement = new T;
                 defaultElement->set(std::get<0>(*defaults.rbegin()));
-                element->attributes[SerializeKey::Default] = defaultElement;
+                element->attributes().set(SerializeKey::Default, defaultElement);
             }
         };
 
@@ -769,7 +769,7 @@ namespace drafter
         size_t valuesCount = data.values.size();
 
         if (!data.descriptions.empty()) {
-            element->meta[SerializeKey::Description] = DescriptionToRefract(data);
+            element->meta().set(SerializeKey::Description, DescriptionToRefract(data));
         }
 
         SetElementType(element, value.node->valueDefinition.typeDefinition);
@@ -831,7 +831,7 @@ namespace drafter
                 SetElementType(key, property.node->name.variable.typeDefinition);
             }
 
-            key->attributes[SerializeKey::Variable] = refract::IElement::Create(true);
+            key->attributes().set(SerializeKey::Variable, refract::Create(true));
 
             if (!property.node->name.variable.values.empty()) {
                 key->set(property.node->name.variable.values.begin()->literal);
@@ -861,7 +861,7 @@ namespace drafter
 
         // there is no source map for attributes
         if (refract::IElement* attributes = MsonTypeAttributesToRefract(attrs)) {
-            element->attributes[SerializeKey::TypeAttributes] = attributes;
+            element->attributes().set(SerializeKey::TypeAttributes, attributes);
         }
 
         std::string description;
@@ -869,16 +869,15 @@ namespace drafter
         Join join(descriptionRef);
         snowcrash::SourceMap<std::string> sourceMap;
 
-        refract::IElement::MemberElementCollection::iterator iterator = value->meta.find(SerializeKey::Description);
-        if (iterator != value->meta.end()) {
+        auto desc = value->meta().claim(SerializeKey::Description);
+        if (desc) {
             // There is already setted description to "value" as result of `RefractElementFromValue()`
             // so we need to move this atribute from "value" up to MemberElement
             //
             // NOTE: potentionaly unsafe, but we set it already to StringElement
             // most safe is check it via refract::TypeQueryVisitor
-            descriptionRef = (static_cast<refract::StringElement*>((*iterator)->value.second)->value);
-            element->meta.push_back(*iterator);
-            value->meta.erase(iterator);
+            descriptionRef = (static_cast<refract::StringElement*>(desc->value.second)->value);
+            element->meta().push_back(desc.release());
             // FIXME: extract source map
         } else {
             join(property.node->description);
@@ -906,7 +905,7 @@ namespace drafter
         }
 
         if (!description.empty()) {
-            element->meta[SerializeKey::Description] = PrimitiveToRefract(MakeNodeInfo(description, sourceMap));
+            element->meta().set(SerializeKey::Description, PrimitiveToRefract(MakeNodeInfo(description, sourceMap)));
         }
 
         return element;
@@ -958,7 +957,7 @@ namespace drafter
 
             // there is no source map for attributes
             if (refract::IElement* attributes = MsonTypeAttributesToRefract(attrs)) {
-                element->attributes[SerializeKey::TypeAttributes] = attributes;
+                element->attributes().set(SerializeKey::TypeAttributes, attributes);
             }
 
             return element;
@@ -1075,7 +1074,7 @@ namespace drafter
         refract::RefElement* ref = new refract::RefElement;
 
         ref->set(mixin.node->typeSpecification.name.symbol.literal);
-        ref->attributes[SerializeKey::Path] = refract::IElement::Create(SerializeKey::Content);
+        ref->attributes().set(SerializeKey::Path, refract::Create(SerializeKey::Content));
 
         return ref;
     }
@@ -1124,14 +1123,15 @@ namespace drafter
         if (!ds.node->name.symbol.literal.empty()) {
             snowcrash::SourceMap<mson::Literal> sourceMap = *NodeInfo<mson::Literal>::NullSourceMap();
             sourceMap.sourceMap.append(ds.sourceMap->name.sourceMap);
-            element->meta[SerializeKey::Id] = PrimitiveToRefract(MakeNodeInfo(ds.node->name.symbol.literal, sourceMap));
+            element->meta().set(
+                SerializeKey::Id, PrimitiveToRefract(MakeNodeInfo(ds.node->name.symbol.literal, sourceMap)));
         }
 
         AttachSourceMap(element, MakeNodeInfo(ds.node, ds.sourceMap));
 
         // there is no source map for attributes
         if (refract::IElement* attributes = MsonTypeAttributesToRefract(ds.node->typeDefinition.attributes)) {
-            element->attributes[SerializeKey::TypeAttributes] = attributes;
+            element->attributes().set(SerializeKey::TypeAttributes, attributes);
         }
 
         ElementData<T> data;
@@ -1146,7 +1146,7 @@ namespace drafter
         TransformElementData<T>(element, data);
 
         if (refract::IElement* description = DescriptionToRefract(data)) {
-            element->meta[SerializeKey::Description] = description;
+            element->meta().set(SerializeKey::Description, description);
         }
 
         return element;

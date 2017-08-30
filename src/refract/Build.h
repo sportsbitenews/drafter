@@ -17,16 +17,16 @@ namespace refract
      * eg:
      * ```
         return Build(new ObjectElement)
-           ("m1", IElement::Create("Value"))
+           ("m1", Create("Value"))
            ("m2", Build(new ArrayElement)
-                     (IElement::Create("m2[0]"))
+                     (Create("m2[0]"))
            )
            ("m3", Build(new ObjectElement)
-                     ("m3.1", IElement::Create("Str3.1"))
-                     ("m3.2", IElement::Create(3.2))
+                     ("m3.1", Create("Str3.1"))
+                     ("m3.2", Create(3.2))
                      ("m3.3", Build(new ObjectElement)
-                                 ("m3.3.1", IElement::Create("Str3/4/1"))
-                                 ("m3.3.2", IElement::Create(3.42))
+                                 ("m3.3.1", Create("Str3/4/1"))
+                                 ("m3.3.2", Create(3.42))
                                  ("m3.3.2", new NullElement)
                      )
            );

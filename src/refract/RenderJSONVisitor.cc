@@ -184,7 +184,7 @@ namespace refract
             return NULL;
         }
 
-        T* result = IElement::Create(*v);
+        T* result = Create(*v);
 
         return result;
     }

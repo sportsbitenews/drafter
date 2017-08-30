@@ -27,9 +27,9 @@ namespace drafter
                     refract::ArrayElement* samples = new refract::ArrayElement;
                     std::pair<bool, typename E::ValueType> value = LiteralTo<typename E::ValueType>(literal);
                     if (value.first) {
-                        samples->push_back(refract::IElement::Create(value.second));
+                        samples->push_back(refract::Create(value.second));
                     }
-                    element->attributes[SerializeKey::Samples] = samples;
+                    element->attributes().set(SerializeKey::Samples, samples);
                 } break;
 
                 case eValue: {

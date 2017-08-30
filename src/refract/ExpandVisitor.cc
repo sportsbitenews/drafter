@@ -42,19 +42,19 @@ namespace refract
 
         void CopyMetaId(IElement& dst, const IElement& src)
         {
-            IElement::MemberElementCollection::const_iterator name = src.meta.find("id");
-            if (name != src.meta.end() && (*name)->value.second && !(*name)->value.second->empty()) {
-                dst.meta["id"] = (*name)->value.second->clone();
+            auto name = src.meta().find("id");
+            if (name != src.meta().end() && (*name)->value.second && !(*name)->value.second->empty()) {
+                dst.meta().set("id", (*name)->value.second->clone());
             }
         }
 
         void MetaIdToRef(IElement& e)
         {
-            IElement::MemberElementCollection::const_iterator name = e.meta.find("id");
-            if (name != e.meta.end() && (*name)->value.second && !(*name)->value.second->empty()) {
+            auto name = e.meta().find("id");
+            if (name != e.meta().end() && (*name)->value.second && !(*name)->value.second->empty()) {
                 IElement* clone = (*name)->value.second->clone();
-                e.meta["ref"] = clone;
-                e.meta.erase("id");
+                e.meta().set("ref", clone);
+                e.meta().erase("id");
             }
         }
 
@@ -95,7 +95,7 @@ namespace refract
                  en = parent->element(), parent = registry.find(en)) {
 
                 inheritance.push(parent->clone((IElement::cAll ^ IElement::cElement) | IElement::cNoMetaId));
-                inheritance.top()->meta["ref"] = IElement::Create(en);
+                inheritance.top()->meta().set("ref", Create(en));
             }
 
             ExtendElement* e = new ExtendElement;
@@ -109,7 +109,7 @@ namespace refract
             // \see test/fixtures/mson-resource-unresolved-reference.apib
             //
             // if (e->value.empty()) {
-            //   e->meta["ref"] = IElement::Create(name);
+            //   e->meta["ref"] = Create(name);
             //}
 
             return e;
@@ -153,8 +153,8 @@ namespace refract
         T* ExpandMembers(const T& e)
         {
             T* o = new T;
-            o->attributes.clone(e.attributes);
-            o->meta.clone(e.meta);
+            o->attributes().clone(e.attributes());
+            o->meta().clone(e.meta());
 
             if (!e.empty()) {
                 o->set(ExpandValue(e.value));
@@ -175,7 +175,7 @@ namespace refract
                 const IElement* root = FindRootAncestor(e.element(), registry);
                 // FIXME: if not found root
                 IElement* result = root->clone(IElement::cMeta | IElement::cAttributes | IElement::cNoMetaId);
-                result->meta["ref"] = IElement::Create(e.element());
+                result->meta().set("ref", Create(e.element()));
                 return result;
             }
 
@@ -190,7 +190,7 @@ namespace refract
             members.pop_back();
 
             T* origin = ExpandMembers(e);
-            origin->meta.erase("id");
+            origin->meta().erase("id");
 
             extend->push_back(origin);
 
@@ -220,7 +220,7 @@ namespace refract
             if (IElement* referenced = registry.find(ref->value)) {
                 referenced = ExpandOrClone(referenced);
                 MetaIdToRef(*referenced);
-                ref->attributes["resolved"] = referenced;
+                ref->attributes().set("resolved", referenced);
             }
 
             members.pop_back();
@@ -276,7 +276,7 @@ namespace refract
             }
 
             T* o = new T;
-            o->meta.clone(e.meta);
+            o->meta().clone(e.meta());
 
             for (std::vector<OptionElement*>::const_iterator it = e.value.begin(); it != e.value.end(); ++it) {
                 o->push_back(static_cast<OptionElement*>(context->ExpandOrClone(*it)));

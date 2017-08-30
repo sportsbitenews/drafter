@@ -19,6 +19,9 @@
 #include "Visitor.h"
 
 #include "ElementFwd.h"
+#include "ElementIfc.h"
+
+#include "MemberElementCollection.h"
 
 namespace refract
 {
@@ -60,136 +63,23 @@ namespace refract
         typedef BooleanElement ElementType;
     };
 
-    struct IElement {
-        class MemberElementCollection final
-        {
-            // FIXME raw pointer ownership
-            using Container = std::vector<MemberElement*>;
-            Container elements;
-
-        public:
-            using iterator = typename Container::iterator;
-            using const_iterator = typename Container::const_iterator;
-
-        public:
-            MemberElementCollection() = default;
-            ~MemberElementCollection();
-
-            MemberElementCollection(const MemberElementCollection&) = delete;
-            MemberElementCollection(MemberElementCollection&&) = default;
-
-            MemberElementCollection& operator=(const MemberElementCollection&) = delete;
-            MemberElementCollection& operator=(MemberElementCollection&&) = default;
-
-        public:
-            const_iterator begin() const noexcept
-            {
-                return elements.begin();
-            }
-            iterator begin() noexcept
-            {
-                return elements.begin();
-            }
-
-            const_iterator end() const noexcept
-            {
-                return elements.end();
-            }
-            iterator end() noexcept
-            {
-                return elements.end();
-            }
-
-            const_iterator find(const std::string& name) const;
-            iterator find(const std::string& name);
-
-            MemberElement& operator[](const std::string& name);
-
-            /// clone elements from `other` to `this`
-            void clone(const MemberElementCollection& other);
-
-            // FIXME erase(const std::string) deletes pointer, whereas erase(iterator) does not
-            void erase(const std::string& key);
-            void erase(iterator it)
-            {
-                elements.erase(it);
-            }
-
-            // FIXME pointers are not deleted
-            void clear()
-            {
-                elements.clear();
-            }
-
-            void push_back(MemberElement* e)
-            {
-                elements.push_back(e);
-            }
-
-            bool empty() const noexcept
-            {
-                return elements.empty();
-            }
-            Container::size_type size() const noexcept
-            {
-                return elements.size();
-            }
-        };
-
-        MemberElementCollection meta;
-        MemberElementCollection attributes;
-
-        /**
-         * return "name" of element
-         * usualy injected by "trait", but you can set own
-         * via pair method `element(std::string)`
-         */
-        virtual std::string element() const = 0;
-        virtual void element(const std::string&) = 0;
-
-        // NOTE: probably rename to Accept
-        virtual void content(Visitor& v) const = 0;
-
-        /**
-         * Flags for clone() element - select parts of refract element to be clonned
-         * \see Element<T>::clone()
-         */
-        typedef enum {
-            cMeta = 0x01,
-            cAttributes = 0x02,
-            cValue = 0x04,
-            cElement = 0x08,
-            cAll = cMeta | cAttributes | cValue | cElement,
-
-            cNoMetaId = 0x10,
-        } cloneFlags;
-
-        virtual IElement* clone(const int flag = cAll) const = 0;
-
-        virtual bool empty() const = 0;
-
-        /**
-         * Returns new element with content set as `value`
-         * Type of returned element depends on type of `value`
-         *
-         * In current implementation iis able create just primitive element types: (Bool|Number|String)
-         */
-        template <typename T>
-        static typename ElementTypeSelector<T>::ElementType* Create(const T& value)
-        {
-            typedef typename ElementTypeSelector<T>::ElementType ElementType;
-            return new ElementType(value);
-        };
-
-        /**
-         * overrided for static function `Create()` with classic c-string
-         */
-        static StringElement* Create(const char* value);
-
-        virtual ~IElement()
-        {
-        }
+    /**
+     * Returns new element with content set as `value`
+     * Type of returned element depends on type of `value`
+     *
+     * In current implementation iis able create just primitive element types: (Bool|Number|String)
+     */
+    template <typename T>
+    static typename ElementTypeSelector<T>::ElementType* Create(const T& value)
+    {
+        typedef typename ElementTypeSelector<T>::ElementType ElementType;
+        return new ElementType(value);
     };
+
+    /**
+     * overrided for function `Create()` with classic c-string
+     */
+    StringElement* Create(const char* value);
 
     bool isReserved(const std::string& element);
 
@@ -199,6 +89,8 @@ namespace refract
     template <typename T, typename Trait>
     class Element : public IElement
     {
+        MemberElementCollection meta_;
+        MemberElementCollection attributes_;
 
     public:
         typedef Element<T, Trait> Type;
@@ -251,14 +143,14 @@ namespace refract
             }
 
             if (flags & cAttributes) {
-                element->attributes.clone(self->attributes);
+                element->attributes_ = self->attributes_;
             }
 
             if (flags & cMeta) {
-                element->meta.clone(self->meta);
+                element->meta_ = self->meta_;
 
                 if (flags & cNoMetaId) {
-                    element->meta.erase("id");
+                    element->meta().erase("id");
                 }
             }
 
@@ -273,9 +165,33 @@ namespace refract
         {
         }
 
+        Element(const Element&) = delete;
+        Element(Element&&) = delete;
+
+        Element& operator=(const Element&) = delete;
+        Element& operator=(Element&&) = delete;
+
         virtual bool empty() const
         {
             return !hasContent;
+        }
+
+        MemberElementCollection& meta() noexcept override
+        {
+            return meta_;
+        }
+        const MemberElementCollection& meta() const noexcept override
+        {
+            return meta_;
+        }
+
+        MemberElementCollection& attributes() noexcept override
+        {
+            return attributes_;
+        }
+        const MemberElementCollection& attributes() const noexcept override
+        {
+            return attributes_;
         }
 
         virtual ~Element()
@@ -583,7 +499,7 @@ namespace refract
 
         void set(const std::string& key, IElement* element)
         {
-            set(IElement::Create(key), element);
+            set(Create(key), element);
         }
 
         void set(IElement* key, IElement* element)

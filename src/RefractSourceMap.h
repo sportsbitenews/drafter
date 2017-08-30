@@ -20,7 +20,7 @@ namespace drafter
     void AttachSourceMap(refract::IElement* element, const T& nodeInfo)
     {
         if (!nodeInfo.sourceMap->sourceMap.empty()) {
-            element->attributes[SerializeKey::SourceMap] = SourceMapToRefract(nodeInfo.sourceMap->sourceMap);
+            element->attributes().set(SerializeKey::SourceMap, SourceMapToRefract(nodeInfo.sourceMap->sourceMap));
         }
     }
 
@@ -29,7 +29,7 @@ namespace drafter
     {
         typedef typename refract::ElementTypeSelector<T>::ElementType ElementType;
 
-        ElementType* element = refract::IElement::Create(*primitive.node);
+        ElementType* element = refract::Create(*primitive.node);
 
         AttachSourceMap(element, primitive);
 

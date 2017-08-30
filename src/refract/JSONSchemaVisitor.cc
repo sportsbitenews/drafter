@@ -121,7 +121,7 @@ namespace refract
             IElement* t = m->value.second;
             ArrayElement* a = new ArrayElement;
             a->push_back(t);
-            a->push_back(IElement::Create(type));
+            a->push_back(Create(type));
             m->value.second = a;
         } else {
             setSchemaType(type);
@@ -158,7 +158,7 @@ namespace refract
 
             if (fixed) {
                 ArrayElement* a = new ArrayElement;
-                a->push_back(IElement::Create(*value));
+                a->push_back(Create(*value));
                 addMember("enum", a);
             }
         }
@@ -213,10 +213,9 @@ namespace refract
             BooleanElement* boolSecond = TypeQueryVisitor::as<BooleanElement>(e.value.second);
 
             if (e.value.second && (strSecond || numSecond || boolSecond)) {
-                IElement::MemberElementCollection::const_iterator defaultIt
-                    = e.value.second->attributes.find("default");
+                auto defaultIt = e.value.second->attributes().find("default");
 
-                if (defaultIt != e.value.second->attributes.end()) {
+                if (defaultIt != e.value.second->attributes().end()) {
                     renderer.addMember("default", (*defaultIt)->clone());
                 }
             }
@@ -330,7 +329,7 @@ namespace refract
         }
 
         if (fixed || fixedType) {
-            addMember("additionalProperties", IElement::Create(false));
+            addMember("additionalProperties", Create(false));
         }
     }
 
@@ -582,7 +581,7 @@ namespace refract
                         StringElement* str = TypeQueryVisitor::as<StringElement>(mr->value.first);
 
                         if (str) {
-                            reqVals.push_back(IElement::Create(str->value));
+                            reqVals.push_back(Create(str->value));
                         }
                     }
 
